@@ -1,4 +1,4 @@
-package directives
+package interfaces
 
 import "github.com/benjic/alexa/request"
 

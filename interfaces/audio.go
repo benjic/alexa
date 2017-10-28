@@ -1,4 +1,4 @@
-package directives
+package interfaces
 
 import (
 	"github.com/benjic/alexa/request"
@@ -14,8 +14,8 @@ const (
 
 type AudioPlaybackStopperQueueClearerHandler func(AudioPlayerStopperQueueClearer, *AudioPlaybackRequest) error
 type AudioPlaybackStoppedHandler func(*AudioPlaybackRequest) error
-type AudioPlaybackDirectiveHandler func(AudioPlayerDirective, *AudioPlaybackRequest) error
-type AudioPlaybackFailedHandler func(AudioPlayerDirective, *AudioPlaybackFailedRequest) error
+type AudioPlaybackDirectiveHandler func(AudioPlayerDirectives, *AudioPlaybackRequest) error
+type AudioPlaybackFailedHandler func(AudioPlayerDirectives, *AudioPlaybackFailedRequest) error
 
 type AudioPlaybackRequest struct {
 	Version string                   `json:"version"`
@@ -76,7 +76,7 @@ type AudioQueueClearer interface {
 	ClearAllAudio()
 }
 
-type AudioPlayerDirective interface {
+type AudioPlayerDirectives interface {
 	AudioPlayer
 	AudioStopper
 	AudioQueueClearer
