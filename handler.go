@@ -5,19 +5,28 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/benjic/alexa/directives"
 	"github.com/benjic/alexa/request"
 )
-
-type IntentRequestHandlerFunc func(Response, *request.Intent) error
-type LaunchRequestHandlerFunc func(Response, *request.Launch) error
-type SessionEndedRequestHandlerFunc func(*request.SessionEnded) error
 
 // Handler allows for custom behavior to be attributed to specific request
 // types.
 type Handler struct {
-	IntentRequest       IntentRequestHandlerFunc
-	LaunchRequest       LaunchRequestHandlerFunc
-	SessionEndedRequest SessionEndedRequestHandlerFunc
+	// Standard Request Handlers
+
+	IntentRequest       func(Response, *request.Intent) error
+	LaunchRequest       func(Response, *request.Launch) error
+	SessionEndedRequest request.SessionEndedRequestHandler
+
+	// Audio Request Handlers
+
+	AudioPlaybackStartedRequest        directives.AudioPlaybackStopperQueueClearerHandler
+	AudioPlaybackFinishedRequest       directives.AudioPlaybackStopperQueueClearerHandler
+	AudioPlaybackStoppedRequest        directives.AudioPlaybackStoppedHandler
+	AudioPlaybackNearlyFinishedRequest directives.AudioPlaybackDirectiveHandler
+	AudioPlaybackFailedRequest         directives.AudioPlaybackFailedHandler
+
+	SystemExceptionRequest directives.SystemExceptionEncounteredHandler
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +68,7 @@ func (h *Handler) routeRequest(bs []byte) (Response, error) {
 		return nil, err
 	}
 
-	resp := &responseBuilder{Response: &response{}, Version: version}
+	resp := &responseBuilder{Version: version, Response: &response{}}
 
 	switch p.Request.Type {
 	case request.LaunchRequestType:
@@ -86,8 +95,55 @@ func (h *Handler) routeRequest(bs []byte) (Response, error) {
 			}
 			return nil, h.SessionEndedRequest(req)
 		}
+	case directives.AudioPlayerPlaybackFailedType:
+		if h.AudioPlaybackFailedRequest != nil {
+			req := &directives.AudioPlaybackFailedRequest{}
+			if err := json.Unmarshal(bs, req); err != nil {
+				return nil, err
+			}
+			return nil, h.AudioPlaybackFailedRequest(resp, req)
+		}
+	case directives.AudioPlayerPlaybackStartedType:
+		if h.AudioPlaybackStartedRequest != nil {
+			req := &directives.AudioPlaybackRequest{}
+			if err := json.Unmarshal(bs, req); err != nil {
+				return nil, err
+			}
+			return resp, h.AudioPlaybackStartedRequest(resp, req)
+		}
+	case directives.AudioPlayerPlaybackStoppedType:
+		if h.AudioPlaybackStoppedRequest != nil {
+			req := &directives.AudioPlaybackRequest{}
+			if err := json.Unmarshal(bs, req); err != nil {
+				return nil, err
+			}
+			return resp, h.AudioPlaybackStoppedRequest(req)
+		}
+	case directives.AudioPlayerPlaybackFinishedType:
+		if h.AudioPlaybackFinishedRequest != nil {
+			req := &directives.AudioPlaybackRequest{}
+			if err := json.Unmarshal(bs, req); err != nil {
+				return nil, err
+			}
+			return resp, h.AudioPlaybackFinishedRequest(resp, req)
+		}
+	case directives.AudioPlayerPlaybackNearlyFinishedType:
+		if h.AudioPlaybackNearlyFinishedRequest != nil {
+			req := &directives.AudioPlaybackRequest{}
+			if err := json.Unmarshal(bs, req); err != nil {
+				return nil, err
+			}
+			return resp, h.AudioPlaybackNearlyFinishedRequest(resp, req)
+		}
+	case directives.SystemExceptionEncounteredType:
+		if h.SystemExceptionRequest != nil {
+			req := &directives.SystemExceptionRequest{}
+			if err := json.Unmarshal(bs, req); err != nil {
+				return nil, err
+			}
+			return nil, h.SystemExceptionRequest(req)
+		}
 	}
-
 	return nil, nil
 }
 

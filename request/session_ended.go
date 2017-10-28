@@ -4,6 +4,8 @@ const (
 	SessionEndedRequestType = "SessionEndedRequest"
 )
 
+type SessionEndedRequestHandler func(*SessionEnded) error
+
 type SessionEnded struct {
 	Version string           `json:"version"`
 	Context Context          `json:"context"`

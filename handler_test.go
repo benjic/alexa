@@ -161,6 +161,11 @@ const (
 func launchRequestHandler(resp alexa.Response, req *request.Launch) error {
 	fmt.Printf("%+v\n", req.Request)
 	resp.PlainText("Hello world")
+	resp.EnqueueAudio("ab", "https://sdfsd", "asdf", 234)
+	resp.ReplaceAllAudio("ab", "https://sdfsd", 234)
+	resp.StopAudio()
+	resp.ClearEnqueuedAudio()
+	resp.ClearAllAudio()
 	return nil
 }
 
@@ -177,9 +182,9 @@ func sessionEndedRequestHandler(req *request.SessionEnded) error {
 
 func newTestHandler() *alexa.Handler {
 	return &alexa.Handler{
-		IntentRequest:       intentRequestHandler,
-		LaunchRequest:       launchRequestHandler,
-		SessionEndedRequest: sessionEndedRequestHandler,
+		IntentRequest: intentRequestHandler,
+		// LaunchRequest:       launchRequestHandler,
+		// SessionEndedRequest: sessionEndedRequestHandler,
 	}
 }
 

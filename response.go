@@ -1,5 +1,11 @@
 package alexa
 
+import (
+	"encoding/json"
+
+	"github.com/benjic/alexa/directives"
+)
+
 const (
 	version                   = "1.0"
 	plainTextOutputSpeechType = "PlainText"
@@ -9,19 +15,43 @@ const (
 	linkAccountCardType       = "LinkAccount"
 )
 
-// Response allows a handler to update the response returned to Alexa.
 type Response interface {
 	PlainText(text string)
 	SSML(ssml string)
-
 	SimpleCard(title, content string)
 	StandardCard(title, text, smallImageURL, largeImageURL string)
 	LinkAccountCard()
-
 	RepromptPlainText(text string)
 	RepromptSSML(ssml string)
-
 	ShouldEndSession(value bool)
+
+	directives.AudioPlayerDirective
+}
+
+type playDirective struct {
+	Type         string                 `json:"type"`
+	PlayBehavior string                 `json:"playBehavior"`
+	AudioItem    playDirectiveAudioItem `json:"audioItem"`
+}
+
+type playDirectiveAudioItem struct {
+	Stream playDirectiveAudioStream `json:"stream"`
+}
+
+type playDirectiveAudioStream struct {
+	URL                   string  `json:"url"`
+	Token                 string  `json:"token"`
+	ExpectedPreviousToken *string `json:"expectedPreviousToken,omitempty"`
+	OffsetInMilliseconds  int     `json:"offsetInMilliseconds"`
+}
+
+type stopDirective struct {
+	Type string `json:"type"`
+}
+
+type clearAudioQueueDirective struct {
+	Type          string `json:"type"`
+	ClearBehavior string `json:"clearBehavior"`
 }
 
 type outputSpeech struct {
@@ -50,10 +80,35 @@ type responseBuilder struct {
 }
 
 type response struct {
-	Card             *card         `json:"card,omitempty"`
-	OutputSpeech     *outputSpeech `json:"outputSpeech,omitempty"`
-	Reprompt         *reprompt     `json:"reprompt,omitempty"`
-	ShouldEndSession *bool         `json:"shouldEndSession,omitempty"`
+	Card             *card               `json:"card,omitempty"`
+	OutputSpeech     *outputSpeech       `json:"outputSpeech,omitempty"`
+	Reprompt         *reprompt           `json:"reprompt,omitempty"`
+	Directives       *responseDirectives `json:"directives,omitempty"`
+	ShouldEndSession *bool               `json:"shouldEndSession,omitempty"`
+}
+
+type responseDirectives struct {
+	playDirective            *playDirective
+	stopAudioDirective       *stopDirective
+	clearAudioQueueDirective *clearAudioQueueDirective
+}
+
+func (d responseDirectives) MarshalJSON() ([]byte, error) {
+	ds := []interface{}{}
+
+	if d.playDirective != nil {
+		ds = append(ds, d.playDirective)
+	}
+
+	if d.stopAudioDirective != nil {
+		ds = append(ds, d.stopAudioDirective)
+	}
+
+	if d.clearAudioQueueDirective != nil {
+		ds = append(ds, d.clearAudioQueueDirective)
+	}
+
+	return json.Marshal(ds)
 }
 
 type reprompt struct {
@@ -134,4 +189,77 @@ func (b *responseBuilder) RepromptSSML(ssml string) {
 
 func (b *responseBuilder) ShouldEndSession(value bool) {
 	b.Response.ShouldEndSession = &value
+}
+
+func (b *responseBuilder) ReplaceAllAudio(token, url string, offsetInMilliseconds int) {
+	if b.Response.Directives == nil {
+		b.Response.Directives = &responseDirectives{}
+	}
+
+	b.Response.Directives.playDirective = &playDirective{
+		Type:         "AudioPlayer.Play",
+		PlayBehavior: "REPLACE_ALL",
+		AudioItem: playDirectiveAudioItem{
+			playDirectiveAudioStream{
+				OffsetInMilliseconds: offsetInMilliseconds,
+				Token:                token,
+				URL:                  url,
+			},
+		},
+	}
+}
+
+func (b *responseBuilder) EnqueueAudio(token, expectedPreviousToken, url string, offsetInMilliseconds int) {
+	if b.Response.Directives == nil {
+		b.Response.Directives = &responseDirectives{}
+	}
+
+	b.Response.Directives.playDirective = &playDirective{
+		Type:         "AudioPlayer.Play",
+		PlayBehavior: "ENQUEUE",
+		AudioItem: playDirectiveAudioItem{
+			playDirectiveAudioStream{
+				ExpectedPreviousToken: &expectedPreviousToken,
+				OffsetInMilliseconds:  offsetInMilliseconds,
+				Token:                 token,
+				URL:                   url,
+			},
+		},
+	}
+}
+
+func (b *responseBuilder) ReplacedEnqueuedAudio(token, url string, offsetInMilliseconds int) {
+	if b.Response.Directives == nil {
+		b.Response.Directives = &responseDirectives{}
+	}
+
+	b.Response.Directives.playDirective = &playDirective{
+		Type:         "AudioPlayer.Play",
+		PlayBehavior: "REPLACE_ENQUEUED",
+		AudioItem: playDirectiveAudioItem{
+			playDirectiveAudioStream{
+				OffsetInMilliseconds: offsetInMilliseconds,
+				Token:                token,
+				URL:                  url,
+			},
+		},
+	}
+}
+
+func (b responseBuilder) StopAudio() {
+	b.Response.Directives.stopAudioDirective = &stopDirective{Type: "AudioPlayer.Stop"}
+}
+
+func (b responseBuilder) ClearEnqueuedAudio() {
+	b.Response.Directives.clearAudioQueueDirective = &clearAudioQueueDirective{
+		Type:          "AudioPlayer.ClearQueue",
+		ClearBehavior: "CLEAR_ENQUEUED",
+	}
+}
+
+func (b responseBuilder) ClearAllAudio() {
+	b.Response.Directives.clearAudioQueueDirective = &clearAudioQueueDirective{
+		Type:          "AudioPlayer.ClearQueue",
+		ClearBehavior: "CLEAR_ALL",
+	}
 }
