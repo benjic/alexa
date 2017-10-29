@@ -25,7 +25,7 @@ const (
 //
 // https://developer.amazon.com/docs/custom-skills/host-a-custom-skill-as-a-web-service.html#verifying-that-the-request-was-sent-by-alexa
 func verifyRequest(r *http.Request, b *body) error {
-	if err := verifyTimestamp(b); err != nil {
+	if err := verifyTimestamp(b.Request.Timestamp); err != nil {
 		return err
 	}
 
@@ -57,8 +57,9 @@ func getAndVerifyCert(url string) (*x509.Certificate, error) {
 	var buf bytes.Buffer
 	defer resp.Body.Close()
 	io.Copy(&buf, resp.Body)
+	bs := buf.Bytes()
 
-	block, rest := pem.Decode(buf.Bytes())
+	block, rest := pem.Decode(bs)
 	cp := x509.NewCertPool()
 	cp.AppendCertsFromPEM(rest)
 
@@ -90,14 +91,14 @@ func verifySignature(b64Sig string, cert *x509.Certificate, bs []byte) error {
 }
 
 // verifyTimestamp ensures the request timestamp is within temporal tolerance.
-func verifyTimestamp(b *body) error {
-	t, err := time.Parse(time.RFC3339, b.Request.Timestamp)
+func verifyTimestamp(timestamp string) error {
+	t, err := time.Parse(time.RFC3339, timestamp)
 	if err != nil {
 		return err
 	}
 
-	if time.Since(t) > maxTimeDrift {
-		return fmt.Errorf("request timestamp too old")
+	if time.Since(t) > maxTimeDrift || time.Since(t) < -maxTimeDrift {
+		return fmt.Errorf("request timestamp out of tolerance")
 	}
 
 	return nil
