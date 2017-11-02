@@ -26,6 +26,38 @@ type Response interface {
 	AudioPlayerDirectives
 }
 
+type AudioPlaybackStopOrClearResponse interface {
+	StopAudio()
+	ClearEnqueuedAudio()
+	ClearAllAudio()
+}
+
+type AudioPlayer interface {
+	ReplaceAllAudio(token, url string, offsetInMilliseconds int)
+	EnqueueAudio(token, url, expectedPreviousToken string, offsetInMilliseconds int)
+	ReplacedEnqueuedAudio(token, url string, offsetInMilliseconds int)
+}
+
+type AudioStopper interface {
+	StopAudio()
+}
+
+type AudioQueueClearer interface {
+	ClearEnqueuedAudio()
+	ClearAllAudio()
+}
+
+type AudioPlayerDirectives interface {
+	AudioPlayer
+	AudioStopper
+	AudioQueueClearer
+}
+
+type AudioPlayerStopperQueueClearer interface {
+	AudioStopper
+	AudioQueueClearer
+}
+
 type playDirective struct {
 	Type         string                 `json:"type"`
 	PlayBehavior string                 `json:"playBehavior"`

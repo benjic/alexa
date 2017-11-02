@@ -173,7 +173,7 @@ func (h *Handler) routeRequest(b *body) (Response, error) {
 		}
 	case systemExceptionEncounteredType:
 		if h.SystemExceptionRequest != nil {
-			req := &SystemExceptionRequest{}
+			req := &SystemExceptionEncounteredRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return nil, err
 			}
