@@ -5,9 +5,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-
-	"github.com/benjic/alexa/interfaces"
-	"github.com/benjic/alexa/request"
 )
 
 type body struct {
@@ -23,26 +20,26 @@ type body struct {
 type Handler struct {
 	// Standard Request Handlers
 
-	IntentRequest       func(Response, *request.Intent) error
-	LaunchRequest       func(Response, *request.Launch) error
-	SessionEndedRequest request.SessionEndedRequestHandler
+	IntentRequest       func(Response, *IntentRequest) error
+	LaunchRequest       func(Response, *LaunchRequest) error
+	SessionEndedRequest SessionEndedRequestHandler
 
 	// Audio Request Handlers
 
-	AudioPlaybackStartedRequest        interfaces.AudioPlaybackStopperQueueClearerHandler
-	AudioPlaybackFinishedRequest       interfaces.AudioPlaybackStopperQueueClearerHandler
-	AudioPlaybackStoppedRequest        interfaces.AudioPlaybackStoppedHandler
-	AudioPlaybackNearlyFinishedRequest interfaces.AudioPlaybackDirectiveHandler
-	AudioPlaybackFailedRequest         interfaces.AudioPlaybackFailedHandler
+	AudioPlaybackStartedRequest        AudioPlaybackStopperQueueClearerHandler
+	AudioPlaybackFinishedRequest       AudioPlaybackStopperQueueClearerHandler
+	AudioPlaybackStoppedRequest        AudioPlaybackStoppedHandler
+	AudioPlaybackNearlyFinishedRequest AudioPlaybackDirectiveHandler
+	AudioPlaybackFailedRequest         AudioPlaybackFailedHandler
 
 	// Playback Controller Handlers
 
-	PlaybackControllerNextCommandRequest     interfaces.PlaybackControllerRequestHandler
-	PlaybackControllerPausedCommandRequest   interfaces.PlaybackControllerRequestHandler
-	PlaybackControllerPlayCommandRequest     interfaces.PlaybackControllerRequestHandler
-	PlaybackControllerPreviousCommandRequest interfaces.PlaybackControllerRequestHandler
+	PlaybackControllerNextCommandRequest     PlaybackControllerRequestHandler
+	PlaybackControllerPausedCommandRequest   PlaybackControllerRequestHandler
+	PlaybackControllerPlayCommandRequest     PlaybackControllerRequestHandler
+	PlaybackControllerPreviousCommandRequest PlaybackControllerRequestHandler
 
-	SystemExceptionRequest interfaces.SystemExceptionEncounteredHandler
+	SystemExceptionRequest SystemExceptionEncounteredHandler
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -78,105 +75,105 @@ func (h *Handler) routeRequest(b *body) (Response, error) {
 	resp := &responseBuilder{Version: version, Response: &response{}}
 
 	switch b.Request.Type {
-	case request.LaunchRequestType:
+	case launchRequestType:
 		if h.LaunchRequest != nil {
-			req := &request.Launch{}
+			req := &LaunchRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return resp, err
 			}
 			return resp, h.LaunchRequest(resp, req)
 		}
-	case request.IntentRequestType:
+	case intentRequestType:
 		if h.IntentRequest != nil {
-			req := &request.Intent{}
+			req := &IntentRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return nil, err
 			}
 			return resp, h.IntentRequest(resp, req)
 		}
-	case request.SessionEndedRequestType:
+	case sessionEndedRequestType:
 		if h.SessionEndedRequest != nil {
-			req := &request.SessionEnded{}
+			req := &SessionEndedRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return nil, err
 			}
 			return nil, h.SessionEndedRequest(req)
 		}
-	case interfaces.AudioPlayerPlaybackFailedType:
+	case audioPlayerPlaybackFailedType:
 		if h.AudioPlaybackFailedRequest != nil {
-			req := &interfaces.AudioPlaybackFailedRequest{}
+			req := &AudioPlaybackFailedRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return nil, err
 			}
 			return nil, h.AudioPlaybackFailedRequest(resp, req)
 		}
-	case interfaces.AudioPlayerPlaybackStartedType:
+	case audioPlayerPlaybackStartedType:
 		if h.AudioPlaybackStartedRequest != nil {
-			req := &interfaces.AudioPlaybackRequest{}
+			req := &AudioPlaybackRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return nil, err
 			}
 			return resp, h.AudioPlaybackStartedRequest(resp, req)
 		}
-	case interfaces.AudioPlayerPlaybackStoppedType:
+	case audioPlayerPlaybackStoppedType:
 		if h.AudioPlaybackStoppedRequest != nil {
-			req := &interfaces.AudioPlaybackRequest{}
+			req := &AudioPlaybackRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return nil, err
 			}
 			return resp, h.AudioPlaybackStoppedRequest(req)
 		}
-	case interfaces.AudioPlayerPlaybackFinishedType:
+	case audioPlayerPlaybackFinishedType:
 		if h.AudioPlaybackFinishedRequest != nil {
-			req := &interfaces.AudioPlaybackRequest{}
+			req := &AudioPlaybackRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return nil, err
 			}
 			return resp, h.AudioPlaybackFinishedRequest(resp, req)
 		}
-	case interfaces.AudioPlayerPlaybackNearlyFinishedType:
+	case audioPlayerPlaybackNearlyFinishedType:
 		if h.AudioPlaybackNearlyFinishedRequest != nil {
-			req := &interfaces.AudioPlaybackRequest{}
+			req := &AudioPlaybackRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return nil, err
 			}
 			return resp, h.AudioPlaybackNearlyFinishedRequest(resp, req)
 		}
-	case interfaces.PlaybackControllerNextCommandIssuedType:
+	case playbackControllerNextCommandIssuedType:
 		if h.PlaybackControllerNextCommandRequest != nil {
-			req := &interfaces.PlaybackControllerRequest{}
+			req := &PlaybackControllerRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return nil, err
 			}
 			return nil, h.PlaybackControllerNextCommandRequest(resp, req)
 		}
-	case interfaces.PlaybackControllerPlayCommandIssuedType:
+	case playbackControllerPlayCommandIssuedType:
 		if h.PlaybackControllerPlayCommandRequest != nil {
-			req := &interfaces.PlaybackControllerRequest{}
+			req := &PlaybackControllerRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return nil, err
 			}
 			return nil, h.PlaybackControllerPlayCommandRequest(resp, req)
 		}
-	case interfaces.PlaybackControllerPausedCommandIssuedType:
+	case playbackControllerPausedCommandIssuedType:
 		if h.PlaybackControllerPausedCommandRequest != nil {
-			req := &interfaces.PlaybackControllerRequest{}
+			req := &PlaybackControllerRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return nil, err
 			}
 			return nil, h.PlaybackControllerPausedCommandRequest(resp, req)
 		}
-	case interfaces.PlaybackControllerPreviousCommandIssuedType:
+	case playbackControllerPreviousCommandIssuedType:
 		if h.PlaybackControllerPreviousCommandRequest != nil {
-			req := &interfaces.PlaybackControllerRequest{}
+			req := &PlaybackControllerRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return nil, err
 			}
 			return nil, h.PlaybackControllerPreviousCommandRequest(resp, req)
 		}
-	case interfaces.SystemExceptionEncounteredType:
+	case systemExceptionEncounteredType:
 		if h.SystemExceptionRequest != nil {
-			req := &interfaces.SystemExceptionRequest{}
+			req := &SystemExceptionRequest{}
 			if err := json.Unmarshal(b.bs, req); err != nil {
 				return nil, err
 			}

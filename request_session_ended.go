@@ -1,14 +1,14 @@
-package request
+package alexa
 
 const (
-	SessionEndedRequestType = "SessionEndedRequest"
+	sessionEndedRequestType = "SessionEndedRequest"
 )
 
-type SessionEndedRequestHandler func(*SessionEnded) error
+type SessionEndedRequestHandler func(*SessionEndedRequest) error
 
-type SessionEnded struct {
+type SessionEndedRequest struct {
 	Version string           `json:"version"`
-	Context Context          `json:"context"`
+	Context RequestContext   `json:"context"`
 	Session Session          `json:"session"`
 	Request SessionEndedData `json:"request"`
 }

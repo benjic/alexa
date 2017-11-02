@@ -1,16 +1,14 @@
-package interfaces
-
-import "github.com/benjic/alexa/request"
+package alexa
 
 const (
-	SystemExceptionEncounteredType = "System.ExceptionEncountered"
+	systemExceptionEncounteredType = "System.ExceptionEncountered"
 )
 
 type SystemExceptionEncounteredHandler func(*SystemExceptionRequest) error
 
 type SystemExceptionRequest struct {
 	Version string                     `json:"version"`
-	Context request.Context            `json:"context"`
+	Context RequestContext             `json:"context"`
 	Request SystemExceptionRequestData `json:"request"`
 }
 

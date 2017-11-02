@@ -1,15 +1,11 @@
-package interfaces
-
-import (
-	"github.com/benjic/alexa/request"
-)
+package alexa
 
 const (
-	AudioPlayerPlaybackStartedType        = "AudioPlayer.PlaybackStarted"
-	AudioPlayerPlaybackFinishedType       = "AudioPlayer.PlaybackFinished"
-	AudioPlayerPlaybackStoppedType        = "AudioPlayer.PlaybackStopped"
-	AudioPlayerPlaybackNearlyFinishedType = "AudioPlayer.PlaybackNearlyFinshed"
-	AudioPlayerPlaybackFailedType         = "AudioPlayer.PlaybackFailed"
+	audioPlayerPlaybackStartedType        = "AudioPlayer.PlaybackStarted"
+	audioPlayerPlaybackFinishedType       = "AudioPlayer.PlaybackFinished"
+	audioPlayerPlaybackStoppedType        = "AudioPlayer.PlaybackStopped"
+	audioPlayerPlaybackNearlyFinishedType = "AudioPlayer.PlaybackNearlyFinshed"
+	audioPlayerPlaybackFailedType         = "AudioPlayer.PlaybackFailed"
 )
 
 type AudioPlaybackStopperQueueClearerHandler func(AudioPlayerStopperQueueClearer, *AudioPlaybackRequest) error
@@ -19,13 +15,13 @@ type AudioPlaybackFailedHandler func(AudioPlayerDirectives, *AudioPlaybackFailed
 
 type AudioPlaybackRequest struct {
 	Version string                   `json:"version"`
-	Context request.Context          `json:"context"`
+	Context RequestContext           `json:"context"`
 	Request AudioPlaybackRequestData `json:"request"`
 }
 
 type AudioPlaybackFailedRequest struct {
 	Version string                         `json:"version"`
-	Context request.Context                `json:"context"`
+	Context RequestContext                 `json:"context"`
 	Request AudioPlaybackFailedRequestData `json:"request"`
 }
 

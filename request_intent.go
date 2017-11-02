@@ -1,12 +1,12 @@
-package request
+package alexa
 
 const (
-	IntentRequestType = "IntentRequest"
+	intentRequestType = "IntentRequest"
 )
 
-type Intent struct {
+type IntentRequest struct {
 	Version string            `json:"version"`
-	Context Context           `json:"context"`
+	Context RequestContext    `json:"context"`
 	Session Session           `json:"session"`
 	Request IntentRequestData `json:"request"`
 }

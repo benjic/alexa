@@ -2,8 +2,6 @@ package alexa
 
 import (
 	"encoding/json"
-
-	"github.com/benjic/alexa/interfaces"
 )
 
 const (
@@ -25,7 +23,7 @@ type Response interface {
 	RepromptSSML(ssml string)
 	ShouldEndSession(value bool)
 
-	interfaces.AudioPlayerDirectives
+	AudioPlayerDirectives
 }
 
 type playDirective struct {

@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/benjic/alexa"
-	"github.com/benjic/alexa/request"
 )
 
 const (
@@ -157,15 +156,15 @@ const (
 	}`
 )
 
-func launchRequestHandler(resp alexa.Response, req *request.Launch) error {
+func launchRequestHandler(resp alexa.Response, req *alexa.LaunchRequest) error {
 	return nil
 }
 
-func intentRequestHandler(resp alexa.Response, req *request.Intent) error {
+func intentRequestHandler(resp alexa.Response, req *alexa.IntentRequest) error {
 	return nil
 }
 
-func sessionEndedRequestHandler(req *request.SessionEnded) error {
+func sessionEndedRequestHandler(req *alexa.SessionEndedRequest) error {
 	return nil
 }
 

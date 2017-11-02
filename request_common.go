@@ -1,10 +1,10 @@
-package request
+package alexa
 
 type Application struct {
 	ID string `json:"applicationId"`
 }
 
-type Context struct {
+type RequestContext struct {
 	System System `json:"system"`
 }
 
