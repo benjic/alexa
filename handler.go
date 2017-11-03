@@ -26,11 +26,11 @@ type Handler struct {
 
 	// Audio Request Handlers
 
-	AudioPlaybackStartedRequest        AudioPlaybackStopperQueueClearerHandler
-	AudioPlaybackFinishedRequest       AudioPlaybackStopperQueueClearerHandler
-	AudioPlaybackStoppedRequest        AudioPlaybackStoppedHandler
-	AudioPlaybackNearlyFinishedRequest AudioPlaybackDirectiveHandler
 	AudioPlaybackFailedRequest         AudioPlaybackFailedHandler
+	AudioPlaybackFinishedRequest       AudioStopperQueueClearerHandler
+	AudioPlaybackNearlyFinishedRequest AudioPlayerStopperQueueClearerHandler
+	AudioPlaybackStartedRequest        AudioStopperQueueClearerHandler
+	AudioPlaybackStoppedRequest        AudioPlaybackStoppedHandler
 
 	// Playback Controller Handlers
 

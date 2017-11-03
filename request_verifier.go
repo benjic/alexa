@@ -21,7 +21,7 @@ const (
 )
 
 // verifyRequest takes an Alexa request body and ensures it meets the conditions
-// specified in the amazon documentaiton for request verification.
+// specified in the amazon documentation for request verification.
 //
 // https://developer.amazon.com/docs/custom-skills/host-a-custom-skill-as-a-web-service.html#verifying-that-the-request-was-sent-by-alexa
 func verifyRequest(r *http.Request, b *body) error {

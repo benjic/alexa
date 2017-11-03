@@ -16,17 +16,25 @@ const (
 	systemExceptionEncounteredType              = "System.ExceptionEncountered"
 )
 
-type AudioPlaybackStopperQueueClearerHandler func(AudioPlayerStopperQueueClearer, *AudioPlaybackRequest) error
+// An AudioStopperQueueClearerHandler is a function that responds to any audio
+// request where stopping and queue changes are allowed.
+type AudioStopperQueueClearerHandler func(AudioStopperQueueClearer, *AudioPlaybackRequest) error
 
+// An AudioPlayerStopperQueueClearerHandler is a function that responds to any
+// request where playing, stopping, or queue changes are allowed.
+type AudioPlayerStopperQueueClearerHandler func(AudioPlayerStopperQueueClearer, *AudioPlaybackRequest) error
+
+// An AudioPlaybackFailedHandler is a function that responds to a request for
+// when the playback of an audio file fails.
+type AudioPlaybackFailedHandler func(AudioPlayerStopperQueueClearer, *AudioPlaybackFailedRequest) error
+
+// An AudioPlaybackStoppedHandler is a function that responds to a request for
+// when the playback of an audio file stops.
 type AudioPlaybackStoppedHandler func(*AudioPlaybackRequest) error
-
-type AudioPlaybackDirectiveHandler func(AudioPlayerDirectives, *AudioPlaybackRequest) error
-
-type AudioPlaybackFailedHandler func(AudioPlayerDirectives, *AudioPlaybackFailedRequest) error
 
 // A PlaybackControllerRequestHandler is a function that will receive a request
 // payload when the controller state updates.
-type PlaybackControllerRequestHandler func(AudioPlayerDirectives, *PlaybackControllerRequest) error
+type PlaybackControllerRequestHandler func(AudioPlayerStopperQueueClearer, *PlaybackControllerRequest) error
 
 // A SessionEndedRequestHandler is a function that will receive a request
 // payload when a session is ended.

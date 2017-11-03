@@ -13,47 +13,53 @@ const (
 	linkAccountCardType       = "LinkAccount"
 )
 
+// A Response allows a handler to construct a valid response to return to
+// the Alexa service.
 type Response interface {
+	LinkAccountCard()
 	PlainText(text string)
 	SSML(ssml string)
-	SimpleCard(title, content string)
-	StandardCard(title, text, smallImageURL, largeImageURL string)
-	LinkAccountCard()
 	RepromptPlainText(text string)
 	RepromptSSML(ssml string)
 	ShouldEndSession(value bool)
+	SimpleCard(title, content string)
+	StandardCard(title, text, smallImageURL, largeImageURL string)
 
-	AudioPlayerDirectives
+	AudioPlayerStopperQueueClearer
 }
 
-type AudioPlaybackStopOrClearResponse interface {
-	StopAudio()
-	ClearEnqueuedAudio()
-	ClearAllAudio()
-}
-
+// An AudioPlayer allows a handler to enqueue or replace the audio playing on
+// a device.
 type AudioPlayer interface {
 	ReplaceAllAudio(token, url string, offsetInMilliseconds int)
 	EnqueueAudio(token, url, expectedPreviousToken string, offsetInMilliseconds int)
 	ReplacedEnqueuedAudio(token, url string, offsetInMilliseconds int)
 }
 
+// An AudioStopper allows a handler to stop the playback of audio on a device.
 type AudioStopper interface {
 	StopAudio()
 }
 
+// An AudioQueueClearer allows a handler to clear the current audio queue for
+// a device.
 type AudioQueueClearer interface {
 	ClearEnqueuedAudio()
 	ClearAllAudio()
 }
 
-type AudioPlayerDirectives interface {
-	AudioPlayer
+// An AudioStopperQueueClearer allows a handler to stop the currently playing
+// audio for a device and clear any queued audio.
+type AudioStopperQueueClearer interface {
 	AudioStopper
 	AudioQueueClearer
 }
 
+// An AudioPlayerStopperQueueClearer allows a handler to play or enqueue audio
+// to be played, stop any currently playing audio, or clear any queued audio on
+// a device.
 type AudioPlayerStopperQueueClearer interface {
+	AudioPlayer
 	AudioStopper
 	AudioQueueClearer
 }
