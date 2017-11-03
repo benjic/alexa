@@ -1,3 +1,7 @@
+// Package alexa provides a way to write typed handlers for requests made from
+// the Alexa Skill service.
+//
+//
 package alexa
 
 import (
@@ -8,6 +12,13 @@ import (
 )
 
 type body struct {
+	Context struct {
+		System struct {
+			Application struct {
+				ApplicationID string `json:"applicationId"`
+			} `json:"application"`
+		} `json:"system"`
+	} `json:"context"`
 	Request struct {
 		Type      string `json:"type"`
 		Timestamp string `json:"timestamp"`
