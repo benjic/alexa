@@ -9,7 +9,7 @@ the response respects the amazon expected values.
 ```go
 func main() {
   http.ListenAndServe(":8080", &alexa.Handler{
-    LaunchRequest: func(resp alexa.Response, req *request.Launch) error {
+    LaunchRequest: func(resp alexa.Response, req *alexa.LaunchRequest) error {
       resp.PlainText("Hello world!")
       return nil
     },
