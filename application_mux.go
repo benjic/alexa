@@ -8,11 +8,11 @@ import (
 // An ApplicationMux allows many handlers to be added by applicationId.
 type ApplicationMux struct {
 	sync.RWMutex
-	mux map[string]Handler
+	mux map[string]*Handler
 }
 
 // Handle associates the given applicationID with a handler.
-func (m *ApplicationMux) Handle(applicationID string, h Handler) {
+func (m *ApplicationMux) Handle(applicationID string, h *Handler) {
 	m.Lock()
 	defer m.Unlock()
 	m.mux[applicationID] = h
@@ -25,7 +25,6 @@ func (m *ApplicationMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
-
 	}
 
 	p, err := parseRequestBody(body)

@@ -54,8 +54,12 @@ type Handler struct {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	body, err := parseRequestBody(r.Body)
+	bs, err := r.GetBody()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 
+	body, err := parseRequestBody(bs)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return

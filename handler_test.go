@@ -2,6 +2,7 @@ package alexa_test
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"net/http/httptest"
 	"testing"
@@ -178,7 +179,8 @@ func newTestHandler() *alexa.Handler {
 
 func TestLaunchRequest(t *testing.T) {
 	h := newTestHandler()
-	r := httptest.NewRequest("POST", "/", bytes.NewBuffer([]byte(launchRequest)))
+	r := httptest.NewRequest("POST", "/", bytes.NewBufferString(launchRequest))
+	r.GetBody = func() (io.ReadCloser, error) { return r.Body, nil }
 	w := httptest.NewRecorder()
 
 	h.ServeHTTP(w, r)
@@ -193,7 +195,8 @@ func TestLaunchRequest(t *testing.T) {
 
 func TestIntentRequest(t *testing.T) {
 	h := newTestHandler()
-	r := httptest.NewRequest("POST", "/", bytes.NewBuffer([]byte(intentRequest)))
+	r := httptest.NewRequest("POST", "/", bytes.NewBufferString(intentRequest))
+	r.GetBody = func() (io.ReadCloser, error) { return r.Body, nil }
 	w := httptest.NewRecorder()
 
 	h.ServeHTTP(w, r)
@@ -208,7 +211,8 @@ func TestIntentRequest(t *testing.T) {
 
 func TestSessionEndedRequest(t *testing.T) {
 	h := newTestHandler()
-	r := httptest.NewRequest("POST", "/", bytes.NewBuffer([]byte(sessionEndedRequest)))
+	r := httptest.NewRequest("POST", "/", bytes.NewBufferString(sessionEndedRequest))
+	r.GetBody = func() (io.ReadCloser, error) { return r.Body, nil }
 	w := httptest.NewRecorder()
 
 	h.ServeHTTP(w, r)
